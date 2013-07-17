@@ -11,6 +11,7 @@ use IO::File;
 use MySQL::Backup;
 use File::Temp;
 use IO::Compress::Gzip qw/ gzip /;
+use Config::Simple;
 
 my $dropbox_key    = 'nfn62hdrw0l47k6';
 my $dropbox_secret = 'r6hcfhcog5nd653';
@@ -29,7 +30,7 @@ unless ($ARGV[0]) {
 
 my $db_to_backup = $ARGV[0];
 
-my $mb = new MySQL::Backup($db_to_backup,'127.0.0.1','root','rgegce',{'USE_REPLACE' => 1, 'SHOW_TABLE_NAMES' => 1});
+my $mb = new MySQL::Backup($db_to_backup,'127.0.0.1','root','',{'USE_REPLACE' => 1, 'SHOW_TABLE_NAMES' => 1});
 
 my $dropbox = WebService::Dropbox->new({
 	key    => $dropbox_key,
@@ -53,6 +54,11 @@ if (!$access_token or !$access_secret) {
 	$dropbox->auth or die $dropbox->error;
 	warn "access_token: " . $dropbox->access_token . "\n";
 	warn "access_secret: " . $dropbox->access_secret . "\n";
+
+	my $cfg = new Config::Simple(syntax=>'ini');
+	$cfg->param("dropbox.access_token" => $dropbox->access_token);
+	$cfg->param("dropbox.access_secret" => $dropbox->access_secret);
+	$cfg->write("dropbox.cfg");
 } else {
 	$dropbox->access_token($access_token);
 	$dropbox->access_secret($access_secret);
@@ -84,5 +90,6 @@ print Dumper $upload if $debug;
 
 say "** File ($upload->{'path'}) has been uploaded to Dropbox **" if $logging;
 
-# `rm temp_file temp_file.gz`;
+unlink 'temp_file';
+unlink 'temp_file.gz';
 
