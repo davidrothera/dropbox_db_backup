@@ -11,25 +11,36 @@ use IO::File;
 use MySQL::Backup;
 use File::Temp;
 use IO::Compress::Gzip qw/ gzip /;
+use Config::Simple;
+
+unless ($ARGV[0]) {
+	die "Usage: $0 <db_name>\n";
+}
+
+my %Config;
+Config::Simple->import_from('dropbox.cfg', \%Config) or warn "Unable to load config! We will attempt to run the setup now.\n";
 
 my $dropbox_key    = 'nfn62hdrw0l47k6';
 my $dropbox_secret = 'r6hcfhcog5nd653';
 
-my $access_token;
-my $access_secret;
+my $access_token  = $Config{'dropbox.access_token'} || undef;
+my $access_secret = $Config{'dropbox.access_secret'} || undef;
+
+my $sql_user = $Config{'sql.user'} || undef;
+my $sql_pass = $Config{'sql.pass'} || undef;
+
+if (not defined $sql_user) {
+	die "Unable to continue with no MySQL credentials. Please see README for example config.\n";
+}
 
 my $date = get_time();
 
 my $logging = 1;
 my $debug   = 0;
 
-unless ($ARGV[0]) {
-	die "Usage: $0 <db_name>\n";
-}
-
 my $db_to_backup = $ARGV[0];
 
-my $mb = new MySQL::Backup($db_to_backup,'127.0.0.1','root','rgegce',{'USE_REPLACE' => 1, 'SHOW_TABLE_NAMES' => 1});
+my $mb = new MySQL::Backup($db_to_backup,'127.0.0.1',$sql_user,$sql_pass,{'USE_REPLACE' => 1, 'SHOW_TABLE_NAMES' => 1});
 
 my $dropbox = WebService::Dropbox->new({
 	key    => $dropbox_key,
@@ -44,15 +55,16 @@ sub get_time {
 	return $test;
 }
 
-get_time();
-
-if (!$access_token or !$access_secret) {
+if (not defined $access_token or not defined $access_secret) {
 	my $url = $dropbox->login or die $dropbox->error;
 	warn "Please Access URL and press Enter: $url\n";
 	<STDIN>;
 	$dropbox->auth or die $dropbox->error;
-	warn "access_token: " . $dropbox->access_token . "\n";
-	warn "access_secret: " . $dropbox->access_secret . "\n";
+
+	my $cfg = new Config::Simple(syntax=>'ini');
+	$cfg->param("dropbox.access_token"  => $dropbox->access_token);
+	$cfg->param("dropbox.access_secret" => $dropbox->access_secret);
+	$cfg->write("dropbox.cfg");
 } else {
 	$dropbox->access_token($access_token);
 	$dropbox->access_secret($access_secret);
@@ -84,5 +96,6 @@ print Dumper $upload if $debug;
 
 say "** File ($upload->{'path'}) has been uploaded to Dropbox **" if $logging;
 
-# `rm temp_file temp_file.gz`;
+unlink 'temp_file';
+unlink 'temp_file.gz';
 
