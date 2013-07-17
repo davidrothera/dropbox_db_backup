@@ -23,8 +23,8 @@ Config::Simple->import_from('dropbox.cfg', \%Config) or warn "Unable to load con
 my $dropbox_key    = 'nfn62hdrw0l47k6';
 my $dropbox_secret = 'r6hcfhcog5nd653';
 
-my $access_token = $Config{'dropbox.access_token'} || '';
-my $access_secret = $Config{'dropbox.access_secret'} || '';
+my $access_token = $Config{'dropbox.access_token'} || undef;
+my $access_secret = $Config{'dropbox.access_secret'} || undef;
 
 my $date = get_time();
 
@@ -48,13 +48,11 @@ sub get_time {
 	return $test;
 }
 
-if (!$access_token or !$access_secret) {
+if (not defined $access_token or not defined $access_secret) {
 	my $url = $dropbox->login or die $dropbox->error;
 	warn "Please Access URL and press Enter: $url\n";
 	<STDIN>;
 	$dropbox->auth or die $dropbox->error;
-	warn "access_token: " . $dropbox->access_token . "\n";
-	warn "access_secret: " . $dropbox->access_secret . "\n";
 
 	my $cfg = new Config::Simple(syntax=>'ini');
 	$cfg->param("dropbox.access_token" => $dropbox->access_token);
