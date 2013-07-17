@@ -13,20 +13,23 @@ use File::Temp;
 use IO::Compress::Gzip qw/ gzip /;
 use Config::Simple;
 
+unless ($ARGV[0]) {
+	die "Usage: $0 <db_name>\n";
+}
+
+my %Config;
+Config::Simple->import_from('dropbox.cfg', \%Config) or warn "Unable to load config! We will attempt to run the setup now.\n";
+
 my $dropbox_key    = 'nfn62hdrw0l47k6';
 my $dropbox_secret = 'r6hcfhcog5nd653';
 
-my $access_token;
-my $access_secret;
+my $access_token = $Config{'dropbox.access_token'} || '';
+my $access_secret = $Config{'dropbox.access_secret'} || '';
 
 my $date = get_time();
 
 my $logging = 1;
 my $debug   = 0;
-
-unless ($ARGV[0]) {
-	die "Usage: $0 <db_name>\n";
-}
 
 my $db_to_backup = $ARGV[0];
 
