@@ -45,8 +45,6 @@ sub get_time {
 	return $test;
 }
 
-get_time();
-
 if (!$access_token or !$access_secret) {
 	my $url = $dropbox->login or die $dropbox->error;
 	warn "Please Access URL and press Enter: $url\n";
