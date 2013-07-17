@@ -12,6 +12,9 @@ use MySQL::Backup;
 use File::Temp;
 use IO::Compress::Gzip qw/ gzip /;
 use Config::Simple;
+use File::HomeDir;
+
+print File::HomeDir->my_home;
 
 unless ($ARGV[0]) {
 	die "Usage: $0 <db_name>\n";
@@ -23,11 +26,11 @@ Config::Simple->import_from('dropbox.cfg', \%Config) or warn "Unable to load con
 my $dropbox_key    = 'nfn62hdrw0l47k6';
 my $dropbox_secret = 'r6hcfhcog5nd653';
 
-my $access_token  = $Config{'dropbox.access_token'} // undef;
-my $access_secret = $Config{'dropbox.access_secret'} // undef;
+my $access_token  = $Config{'dropbox.access_token'};
+my $access_secret = $Config{'dropbox.access_secret'};
 
-my $sql_user = $Config{'sql.user'} // undef;
-my $sql_pass = $Config{'sql.pass'} // undef;
+my $sql_user = $Config{'sql.user'};
+my $sql_pass = $Config{'sql.pass'};
 
 my $date = get_time();
 
@@ -86,6 +89,7 @@ $dropbox->root('sandbox');
 say "** Generating MySQL backup now of databse ($db_to_backup) **" if $logging;
 
 my $sql_fh = IO::File->new('temp_file', '>') or die $!;
+
 my $mb = new MySQL::Backup($db_to_backup,'127.0.0.1',$sql_user,$sql_pass,{'USE_REPLACE' => 1, 'SHOW_TABLE_NAMES' => 1});
 print $sql_fh $mb->create_structure();
 print $sql_fh $mb->data_backup();
