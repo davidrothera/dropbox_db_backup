@@ -23,8 +23,15 @@ Config::Simple->import_from('dropbox.cfg', \%Config) or warn "Unable to load con
 my $dropbox_key    = 'nfn62hdrw0l47k6';
 my $dropbox_secret = 'r6hcfhcog5nd653';
 
-my $access_token = $Config{'dropbox.access_token'} || undef;
+my $access_token  = $Config{'dropbox.access_token'} || undef;
 my $access_secret = $Config{'dropbox.access_secret'} || undef;
+
+my $sql_user = $Config{'sql.user'} || undef;
+my $sql_pass = $Config{'sql.pass'} || undef;
+
+if (not defined $sql_user) {
+	die "Unable to continue with no MySQL credentials. Please see README for example config.\n";
+}
 
 my $date = get_time();
 
@@ -33,7 +40,7 @@ my $debug   = 0;
 
 my $db_to_backup = $ARGV[0];
 
-my $mb = new MySQL::Backup($db_to_backup,'127.0.0.1','root','',{'USE_REPLACE' => 1, 'SHOW_TABLE_NAMES' => 1});
+my $mb = new MySQL::Backup($db_to_backup,'127.0.0.1',$sql_user,$sql_pass,{'USE_REPLACE' => 1, 'SHOW_TABLE_NAMES' => 1});
 
 my $dropbox = WebService::Dropbox->new({
 	key    => $dropbox_key,
@@ -55,7 +62,7 @@ if (not defined $access_token or not defined $access_secret) {
 	$dropbox->auth or die $dropbox->error;
 
 	my $cfg = new Config::Simple(syntax=>'ini');
-	$cfg->param("dropbox.access_token" => $dropbox->access_token);
+	$cfg->param("dropbox.access_token"  => $dropbox->access_token);
 	$cfg->param("dropbox.access_secret" => $dropbox->access_secret);
 	$cfg->write("dropbox.cfg");
 } else {
