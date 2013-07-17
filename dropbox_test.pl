@@ -23,14 +23,14 @@ Config::Simple->import_from('dropbox.cfg', \%Config) or warn "Unable to load con
 my $dropbox_key    = 'nfn62hdrw0l47k6';
 my $dropbox_secret = 'r6hcfhcog5nd653';
 
-my $access_token  = $Config{'dropbox.access_token'} || undef;
-my $access_secret = $Config{'dropbox.access_secret'} || undef;
+my $access_token  = $Config{'dropbox.access_token'} // undef;
+my $access_secret = $Config{'dropbox.access_secret'} // undef;
 
-my $sql_user = $Config{'sql.user'} || undef;
-my $sql_pass = $Config{'sql.pass'} || undef;
+my $sql_user = $Config{'sql.user'} // undef;
+my $sql_pass = $Config{'sql.pass'} // undef;
 
 if (not defined $sql_user) {
-	die "Unable to continue with no MySQL credentials. Please see README for example config.\n";
+	warn "Backup wont be able to continue without MySQL credentials.\n";
 }
 
 my $date = get_time();
@@ -39,8 +39,6 @@ my $logging = 1;
 my $debug   = 0;
 
 my $db_to_backup = $ARGV[0];
-
-my $mb = new MySQL::Backup($db_to_backup,'127.0.0.1',$sql_user,$sql_pass,{'USE_REPLACE' => 1, 'SHOW_TABLE_NAMES' => 1});
 
 my $dropbox = WebService::Dropbox->new({
 	key    => $dropbox_key,
@@ -81,6 +79,7 @@ $dropbox->root('sandbox');
 say "** Generating MySQL backup now of databse ($db_to_backup) **" if $logging;
 
 my $sql_fh = IO::File->new('temp_file', '>') or die $!;
+my $mb = new MySQL::Backup($db_to_backup,'127.0.0.1',$sql_user,$sql_pass,{'USE_REPLACE' => 1, 'SHOW_TABLE_NAMES' => 1});
 print $sql_fh $mb->create_structure();
 print $sql_fh $mb->data_backup();
 $sql_fh->close;
