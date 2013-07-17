@@ -29,10 +29,6 @@ my $access_secret = $Config{'dropbox.access_secret'} // undef;
 my $sql_user = $Config{'sql.user'} // undef;
 my $sql_pass = $Config{'sql.pass'} // undef;
 
-if (not defined $sql_user) {
-	warn "Backup wont be able to continue without MySQL credentials.\n";
-}
-
 my $date = get_time();
 
 my $logging = 1;
@@ -53,6 +49,15 @@ sub get_time {
 	return $test;
 }
 
+if (not defined $sql_user) {
+	say "It looks like you haven't configured your SQL credentials:";
+	print "User: ";
+	chomp ($sql_user = <STDIN>);
+	print "Pass: ";
+	chomp ($sql_pass = <STDIN>);
+	$sql_pass = $sql_pass // '';
+}
+
 if (not defined $access_token or not defined $access_secret) {
 	my $url = $dropbox->login or die $dropbox->error;
 	warn "Please Access URL and press Enter: $url\n";
@@ -62,6 +67,8 @@ if (not defined $access_token or not defined $access_secret) {
 	my $cfg = new Config::Simple(syntax=>'ini');
 	$cfg->param("dropbox.access_token"  => $dropbox->access_token);
 	$cfg->param("dropbox.access_secret" => $dropbox->access_secret);
+	$cfg->param("sql.user" => $sql_user);
+	$cfg->param("sql.pass" => $sql_pass);
 	$cfg->write("dropbox.cfg");
 } else {
 	$dropbox->access_token($access_token);
