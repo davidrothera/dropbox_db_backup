@@ -20,8 +20,10 @@ unless ($ARGV[0]) {
 	die "Usage: $0 <db_name>\n";
 }
 
+my $config_file = File::HomeDir->my_home . '/dropbox.cfg';
+
 my %Config;
-Config::Simple->import_from('dropbox.cfg', \%Config) or warn "Unable to load config! We will attempt to run the setup now.\n";
+Config::Simple->import_from($config_file, \%Config) or warn "Unable to load config! We will attempt to run the setup now.\n";
 
 my $dropbox_key    = 'nfn62hdrw0l47k6';
 my $dropbox_secret = 'r6hcfhcog5nd653';
@@ -72,7 +74,7 @@ if (not defined $access_token or not defined $access_secret) {
 	$cfg->param("dropbox.access_secret" => $dropbox->access_secret);
 	$cfg->param("sql.user" => $sql_user);
 	$cfg->param("sql.pass" => $sql_pass);
-	$cfg->write("dropbox.cfg");
+	$cfg->write($config_file);
 } else {
 	$dropbox->access_token($access_token);
 	$dropbox->access_secret($access_secret);
