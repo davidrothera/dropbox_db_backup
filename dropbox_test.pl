@@ -96,7 +96,7 @@ $sql_fh->autoflush(1); # Turns on the IO::Handle autoflush to immediately write 
 
 my $mb = new MySQL::Backup($db_to_backup,'127.0.0.1',$sql_user,$sql_pass,{'USE_REPLACE' => 1, 'SHOW_TABLE_NAMES' => 1});
 print $sql_fh $mb->create_structure();
-print $sql_fh $mb->data_backup();
+print $mb->data_backup();
 $sql_fh->close;
 
 my $gzip = gzip 'temp_file' => 'temp_file.gz' or die $!;
