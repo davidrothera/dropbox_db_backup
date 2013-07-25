@@ -14,8 +14,6 @@ use IO::Compress::Gzip qw/ gzip /;
 use Config::Simple;
 use File::HomeDir;
 
-print File::HomeDir->my_home;
-
 unless ($ARGV[0]) {
 	die "Usage: $0 <db_name>\n";
 }
