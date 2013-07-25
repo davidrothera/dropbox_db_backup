@@ -90,6 +90,8 @@ say "** Generating MySQL backup now of databse ($db_to_backup) **" if $logging;
 
 my $sql_fh = IO::File->new('temp_file', '>') or die $!;
 
+$sql_fh->autoflush(1); # Turns on the IO::Handle autoflush to immediately write data to the filesystem
+
 my $mb = new MySQL::Backup($db_to_backup,'127.0.0.1',$sql_user,$sql_pass,{'USE_REPLACE' => 1, 'SHOW_TABLE_NAMES' => 1});
 print $sql_fh $mb->create_structure();
 print $sql_fh $mb->data_backup();
