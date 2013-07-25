@@ -101,6 +101,6 @@ print Dumper $upload if $debug;
 
 say "** File ($upload->{'path'}) has been uploaded to Dropbox **" if $logging;
 
-# unlink 'temp_file';
-# unlink 'temp_file.gz';
+unlink 'temp_file';
+unlink 'temp_file.gz';
 
