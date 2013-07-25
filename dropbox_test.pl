@@ -100,12 +100,12 @@ my $gzip = gzip 'temp_file' => 'temp_file.gz' or die $!;
 my $fh = IO::File->new('temp_file.gz') or die $!;
 my $upload_name = "$db_to_backup-$date.sql.gz";
 
-my $upload = $dropbox->files_put($upload_name, $fh) or die $dropbox->error;
+my $upload = $dropbox->files_put_chunked($upload_name, $fh) or die $dropbox->error;
 $fh->close;
 print Dumper $upload if $debug;
 
 say "** File ($upload->{'path'}) has been uploaded to Dropbox **" if $logging;
 
-unlink 'temp_file';
-unlink 'temp_file.gz';
+# unlink 'temp_file';
+# unlink 'temp_file.gz';
 
