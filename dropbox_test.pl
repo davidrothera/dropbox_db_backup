@@ -95,7 +95,7 @@ my $gzip = gzip 'temp_file' => 'temp_file.gz' or die $!;
 my $fh = IO::File->new('temp_file.gz') or die $!;
 my $upload_name = "$db_to_backup-$date.sql.gz";
 
-my $upload = $dropbox->files_put_chunked($upload_name, $fh) or die $dropbox->error;
+my $upload = $dropbox->files_put_chunked($upload_name, $fh, , ,100 * 1024 * 1024) or die $dropbox->error;
 $fh->close;
 print Dumper $upload if $debug;
 
