@@ -8,6 +8,7 @@ use autodie;
 use WebService::Dropbox;
 use Data::Dumper;
 use IO::File;
+use IO::Handle;
 use MySQL::Backup;
 use File::Temp;
 use IO::Compress::Gzip qw/ gzip /;
@@ -88,7 +89,8 @@ $dropbox->root('sandbox');
 
 say "** Generating MySQL backup now of databse ($db_to_backup) **" if $logging;
 
-my $sql_fh = IO::File->new('temp_file', '>') or die $!;
+# my $sql_fh = IO::File->new('temp_file', '>') or die $!;
+open my $sql_fh, ">", "temp_file";
 
 $sql_fh->autoflush(1); # Turns on the IO::Handle autoflush to immediately write data to the filesystem
 
